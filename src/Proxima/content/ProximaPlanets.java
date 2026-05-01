@@ -1,5 +1,6 @@
 package Proxima.content;
 
+import Proxima.block.ProximaBlocks;
 import Proxima.graphics.AsteroidBeltMesh;
 import Proxima.graphics.ZAxisSkyMesh;
 import Proxima.maps.ProximaPlanetGenerator;
@@ -63,7 +64,7 @@ public class ProximaPlanets {
             defaultEnv = mindustry.world.meta.Env.terrestrial;
             
             // 设置默认核心
-            defaultCore = Blocks.coreNucleus;
+            defaultCore = ProximaBlocks.proximaCore;
             
             // 设置规则
             ruleSetter = r -> {

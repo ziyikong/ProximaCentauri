@@ -12,6 +12,9 @@ public class ProximaBlocks{
     
     public static final Seq<Block> proximaOres = new Seq<>();
     
+    // 比邻星核心方块
+    public static Block proximaCore;
+    
     public static Block largeHeatPipe;
     
     // RBMK反应堆方块
@@ -71,6 +74,9 @@ public class ProximaBlocks{
         }};
         
         proximaOres.addAll(oreIron, oreUranium, oreManganese, oreQuartz);
+        
+        // 比邻星核心方块
+        proximaCore = new ProximaCoreBlock("proxima-core");
         
         largeHeatPipe = new LargeHeatPipe("large-heat-pipe"){{
             requirements(Category.crafting, ItemStack.with(

@@ -1,6 +1,8 @@
 package Proxima;
 
 import Proxima.content.ProximaPlanets;
+import Proxima.content.ProximaTechTree;
+import Proxima.content.ProximaUnitTypes;
 import Proxima.effects.SpecialDeathEffects;
 import Proxima.liquids.ProximaLiquids;
 import Proxima.special.SpecialContent;
@@ -45,8 +47,10 @@ public class ProximaCentauriMod extends Mod{
         SpecialContent.load();
         ProximaItems.load();
         ProximaLiquids.load();
+        ProximaUnitTypes.load();
         ProximaBlocks.load();
         ProximaPlanets.load();
+        ProximaTechTree.load();
     }
 
 }

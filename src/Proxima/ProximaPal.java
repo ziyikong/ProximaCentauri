@@ -1,6 +1,8 @@
 package Proxima;
 
 import arc.graphics.*;
+import mindustry.content.Items;
+import mindustry.graphics.Pal;
 
 public class ProximaPal{
     public static Color primary = new Color(0x9a75ffff);
@@ -20,4 +22,11 @@ public class ProximaPal{
     public static Color chordon = new Color(0xffcae9ff);
     public static Color chordonAdd = new Color(0xff7dbcff);
     public static Color chordonDark = new Color(0xff2e93ff);
+
+    public static Color ancient = Items.surgeAlloy.color.cpy().lerp(Pal.accent, 0.115f);
+    public static Color ancientLight = ancient.cpy().lerp(Color.white, 0.7f);
+    public static Color ancientLightMid = ancient.cpy().lerp(Color.white, 0.4f);
+    public static Color ancientDark = ancient.cpy().lerp(Color.black, 0.995f);
+
+    public static Color lightSkyMiddle = new Color(0x78a7ff);
 }
