@@ -118,6 +118,16 @@ public class SixteenDirectionBlock extends Block implements Autotiler {
     public SixteenDirectionBlock(String name) {
         super(name);
         rotate = true;
+        saveConfig = true;
+        config(Integer.class, (SixteenDirectionBuild build, Integer rotation) -> {
+            build.directionData.setRotation(rotation);
+        });
+    }
+
+    @Override
+    public Object nextConfig() {
+        // 返回当前16方向值，确保在创建BuildPlan时能正确传递
+        return getSixteenRotation();
     }
 
     @Override
@@ -133,6 +143,22 @@ public class SixteenDirectionBlock extends Block implements Autotiler {
         if ((x == (req.rotation % 2 == 0)) != invertFlip) {
             req.rotation = Mathf.mod(req.rotation + DIRECTIONS / 2, DIRECTIONS);
         }
+    }
+
+    @Override
+    public void placeEnded(Tile tile, Unit builder, int rotation, Object config) {
+        // 如果config为null但tile存在building，则使用静态变量sixteenRotation来设置16方向值
+        // 这发生在玩家替换方块时，因为原版只能传递4方向旋转值
+        if (config == null && tile != null && tile.build instanceof SixteenDirectionBuild build) {
+            build.directionData.setRotation(getSixteenRotation());
+        }
+    }
+
+    @Override
+    public void onNewPlan(BuildPlan plan) {
+        // 当创建新的放置计划时，将16方向值存储在config中
+        // 无论plan.config是否为null，都需要确保它是正确的16方向值
+        plan.config = getSixteenRotation();
     }
 
     /**
@@ -320,16 +346,17 @@ public class SixteenDirectionBlock extends Block implements Autotiler {
     /**
      * 16方向方块的Building内部类
      */
-    public class SixteenDirectionBuild extends Building {
+    public class SixteenDirectionBuild extends Building implements mindustry.logic.LReadable, mindustry.logic.LWritable {
         // 使用专门的16方向数据类存储旋转值
         protected SixteenDirectionData directionData = new SixteenDirectionData();
 
         @Override
         public void created() {
             super.created();
-            // 使用静态变量sixteenRotation的值，因为父类rotation字段会被Tile截断为4方向
+            // 初始使用父类的4方向rotation乘以4得到16方向值
+            // 这个值后续会被configured()方法中的config值覆盖（如果config存在）
             // 方向值0→0°, 1→22.5°, 2→45°, ..., 15→337.5°
-            directionData.setRotation(getSixteenRotation());
+            directionData.setRotation(rotation * 4);
         }
 
         /**
@@ -368,6 +395,45 @@ public class SixteenDirectionBlock extends Block implements Autotiler {
         }
 
         @Override
+        public void placed() {
+            super.placed();
+            // 如果config不为null，说明已经有正确的16方向值，不需要覆盖
+            // 只有在没有config（替换方块）时才使用当前选择的16方向
+        }
+
+        @Override
+        public void configured(@Nullable Unit builder, Object config) {
+            super.configured(builder, config);
+            // 如果config是Integer类型，设置16方向旋转值
+            if (config instanceof Integer rotation) {
+                directionData.setRotation(rotation);
+            }
+        }
+
+        @Override
+        public void configureAny(Object config) {
+            // 同步设置 directionData，因为 configured() 是异步调用的
+            // 当 config 为 null 时（替换方块），使用当前选择的16方向
+            // 当 config 不为 null 时（蓝图放置），使用蓝图中的16方向值
+            if (config == null) {
+                directionData.setRotation(getSixteenRotation());
+            } else if (config instanceof Integer) {
+                directionData.setRotation((Integer) config);
+            }
+            // 调用父类的 configureAny，它会通过 Call.tileConfig() 异步调用 configured()
+            super.configureAny(config);
+        }
+
+        /**
+         * 获取方块配置（用于蓝图、复制等操作）
+         * 返回16方向旋转值
+         */
+        @Override
+        public Object config() {
+            return directionData.getRotation();
+        }
+
+        @Override
         public void draw() {
             // 使用储存的16方向旋转值绘制贴图
             Draw.rect(block.region, x, y, getDrawRotation(directionData.getRotation()));
@@ -391,6 +457,63 @@ public class SixteenDirectionBlock extends Block implements Autotiler {
             super.read(read, revision);
             // 从存档读取16方向数据
             directionData.read(read);
+        }
+
+        // === LReadable 接口实现 ===
+        @Override
+        public boolean readable(mindustry.logic.LExecutor exec) {
+            return isValid() && (exec.privileged || (this.team == exec.team && !this.block.privileged));
+        }
+
+        @Override
+        public void read(mindustry.logic.LVar position, mindustry.logic.LVar output) {
+            int address = position.numi();
+            // 地址0: 读取16方向旋转值
+            if (address == 0) {
+                output.setnum(directionData.getRotation());
+            }
+            // 地址1: 读取旋转角度（度数）
+            else if (address == 1) {
+                output.setnum(directionData.getRotationDeg());
+            }
+            // 地址2: 读取是否为垂直方向
+            else if (address == 2) {
+                output.setnum(directionData.isCardinalDirection() ? 1 : 0);
+            }
+            // 地址3: 读取4方向值（如果是垂直方向）
+            else if (address == 3) {
+                output.setnum(directionData.toCardinalDirection());
+            }
+            // 无效地址返回NaN
+            else {
+                output.setnum(Double.NaN);
+            }
+        }
+
+        // === LWritable 接口实现 ===
+        @Override
+        public boolean writable(mindustry.logic.LExecutor exec) {
+            return readable(exec);
+        }
+
+        @Override
+        public void write(mindustry.logic.LVar position, mindustry.logic.LVar value) {
+            int address = position.numi();
+            double val = value.num();
+            
+            // 地址0: 设置16方向旋转值
+            if (address == 0) {
+                directionData.setRotation((int) val);
+            }
+            // 地址1: 通过角度设置旋转值
+            else if (address == 1) {
+                int rotation = (int) Math.round(val / SixteenDirectionData.DEG_PER_DIRECTION);
+                directionData.setRotation(rotation);
+            }
+            // 地址2: 通过4方向值设置旋转值
+            else if (address == 2) {
+                directionData.fromCardinalDirection((int) val);
+            }
         }
     }
 }

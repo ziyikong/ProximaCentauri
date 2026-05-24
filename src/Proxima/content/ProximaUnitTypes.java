@@ -48,8 +48,6 @@ import mindustry.graphics.Pal;
 import mindustry.type.StatusEffect;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
-import mindustry.type.ammo.ItemAmmoType;
-import mindustry.type.ammo.PowerAmmoType;
 import mindustry.type.weapons.PointDefenseWeapon;
 import mindustry.type.weapons.RepairBeamWeapon;
 import mindustry.world.meta.BlockFlag;
@@ -72,6 +70,7 @@ import static mindustry.Vars.*;
 public class ProximaUnitTypes {
 
     public static UnitType proximaCoreMech;
+    public static UnitType proximaTrain;
 
     public static void load() {
         proximaCoreMech = new UnitType("proxima-core-mech") {{
@@ -187,6 +186,39 @@ public class ProximaUnitTypes {
                     }};
                 }};
             }});
+        }};
+
+        // 列车单位
+        proximaTrain = new UnitType("proxima-train") {{
+            // 基础配置
+            constructor = UnitEntity::create;
+            isEnemy = false;
+            flying = false;
+            
+            // 移动参数
+            speed = 6f;
+            hitSize = 8f;
+            health = 500f;
+            armor = 5f;
+            drag = 0.3f;
+            accel = 0.5f;
+            rotateSpeed = 5f;
+            
+            // 控制
+            canBoost = false;
+            logicControllable = true;
+            playerControllable = true;
+            allowedInPayloads = false;
+            
+            // 物品容量
+            itemCapacity = 200;
+            
+            // 总是解锁
+            alwaysUnlocked = true;
+            
+            // 死亡和碰撞音效音量
+            wreckSoundVolume = 0.8f;
+            deathSoundVolume = 0.7f;
         }};
     }
 }

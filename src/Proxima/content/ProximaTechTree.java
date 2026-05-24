@@ -11,8 +11,7 @@ import mindustry.type.ItemStack;
 import mindustry.type.Planet;
 import Proxima.block.ProximaBlocks;
 
-import static mindustry.content.TechTree.node;
-import static mindustry.content.TechTree.nodeRoot;
+import static mindustry.content.TechTree.*;
 
 /**
  * 比邻星科技树类
@@ -28,7 +27,12 @@ public class ProximaTechTree {
         // 为比邻星星球设置科技树
         // 以比邻星核心作为科技树的根节点
         ProximaPlanets.proxima.techTree = nodeRoot("proxima", ProximaBlocks.proximaCore, () -> {
-            // 科技树内容将在未来添加
+            // 铁路系统
+            node(ProximaBlocks.trainTrack, () -> {
+                node(ProximaBlocks.trainStation, () -> {
+                    node(ProximaBlocks.trainFactory);
+                });
+            });
         });
     }
 

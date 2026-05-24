@@ -1,12 +1,14 @@
 package Proxima.block;
 
 import arc.struct.*;
+import arc.graphics.Color;
 import mindustry.content.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.meta.BuildVisibility;
 import Proxima.items.*;
+import Proxima.block.train.*;
 
 public class ProximaBlocks{
     public static Block oreIron, oreUranium, oreManganese, oreQuartz;
@@ -82,6 +84,22 @@ public class ProximaBlocks{
 
     // 16方向测试方块
     public static Block sixteenDirectionTestBlock;
+
+    // 可旋转测试方块
+    public static Block rotatableTestBlock;
+
+    // 激光发射器与接收器
+    public static Block laserEmitter;
+    public static Block laserReceiver;
+    public static Block laserMirror;
+
+    // 可旋转制造机
+    public static Block graphiteFactory;
+
+    // 铁路系统
+    public static Block trainTrack;
+    public static Block trainStation;
+    public static Block trainFactory;
 
     public static void load(){
         oreIron = new OreBlock(ProximaItems.iron){{
@@ -437,6 +455,94 @@ public class ProximaBlocks{
             requirements(Category.effect, ItemStack.with(
                 Items.copper, 50,
                 Items.lead, 30
+            ));
+            buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 可旋转测试方块 - 玩家可手动操作方向
+        rotatableTestBlock = new RotatableTestBlock("rotatable-test-block"){{
+            requirements(Category.effect, ItemStack.with(
+                Items.copper, 50,
+                Items.lead, 30
+            ));
+            buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 激光发射器
+        laserEmitter = new LaserEmitter("laser-emitter"){{
+            requirements(Category.power, ItemStack.with(
+                Items.copper, 200,
+                Items.lead, 150,
+                Items.titanium, 100,
+                Items.silicon, 50
+            ));
+            buildVisibility = BuildVisibility.shown;
+            laserIntensity = 1f; // 可配置的光照强度
+            laserColor = Color.valueOf("ff4444"); // 可配置的激光颜色（红色）
+        }};
+
+        // 激光接收器
+        laserReceiver = new LaserReceiver("laser-receiver"){{
+            requirements(Category.power, ItemStack.with(
+                Items.copper, 150,
+                Items.lead, 100,
+                Items.titanium, 80,
+                Items.silicon, 40
+            ));
+            buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 激光反射镜
+        laserMirror = new LaserMirror("laser-mirror"){{
+            requirements(Category.power, ItemStack.with(
+                Items.copper, 50,
+                Items.lead, 30
+            ));
+            buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 石墨工厂（可旋转制造机）
+        graphiteFactory = new RotatableCrafter("graphite-factory"){{
+            requirements(Category.crafting, ItemStack.with(
+                Items.copper, 100,
+                Items.lead, 50
+            ));
+            buildVisibility = BuildVisibility.shown;
+
+            // 配方：煤炭 → 石墨
+            craftTime = 120f;
+            outputItem = new ItemStack(Items.graphite, 1);
+            consumeItem(Items.coal, 1);
+        }};
+
+        // 铁路系统
+        // 铁轨
+        trainTrack = new TrackBlock("train-track"){{
+            requirements(Category.distribution, ItemStack.with(
+                Items.copper, 15,
+                Items.lead, 10
+            ));
+            buildVisibility = BuildVisibility.shown;
+            alwaysUnlocked = true;
+        }};
+
+        // 火车站台
+        trainStation = new TrainStation("train-station"){{
+            requirements(Category.distribution, ItemStack.with(
+                Items.copper, 50,
+                Items.lead, 30,
+                Items.titanium, 20
+            ));
+            buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 列车工厂
+        trainFactory = new TrainFactory("train-factory"){{
+            requirements(Category.units, ItemStack.with(
+                Items.copper, 200,
+                Items.lead, 150,
+                Items.titanium, 100,
+                Items.silicon, 50
             ));
             buildVisibility = BuildVisibility.shown;
         }};
