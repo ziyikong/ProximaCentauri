@@ -6,6 +6,7 @@ import mindustry.content.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;
+import mindustry.world.consumers.ConsumeLiquid;
 import mindustry.world.meta.BuildVisibility;
 import Proxima.items.*;
 import Proxima.block.train.*;
@@ -57,21 +58,12 @@ public class ProximaBlocks{
 
     // 机械臂
     public static Block mechanicalArm;
-
-    // 传送带
-    public static Block proximaConveyor;
-    
-    // 侧输出传送带
-    public static Block sideOutputConveyor;
     
     // 高速侧输出传送带
     public static Block fastSideOutputConveyor;
 
     // Junction
     public static Block proximaJunction;
-
-    // 测试容器
-    public static Block proximaTestContainer;
 
     // 分类物品桥
     public static Block adaptItemBridge;
@@ -100,6 +92,13 @@ public class ProximaBlocks{
     public static Block trainTrack;
     public static Block trainStation;
     public static Block trainFactory;
+
+    // 岩芯钻机
+    public static Block rockCoreDrill;
+
+    // 电线杆
+    public static Block powerPole;
+
 
     public static void load(){
         oreIron = new OreBlock(ProximaItems.iron){{
@@ -545,6 +544,63 @@ public class ProximaBlocks{
                 Items.silicon, 50
             ));
             buildVisibility = BuildVisibility.shown;
+        }};
+
+        // 岩芯钻机
+        rockCoreDrill = new RockCoreDrill("rock-core-drill"){{
+            requirements(Category.production, ItemStack.with(
+                    Items.copper, 80,
+                    Items.lead, 60,
+                    Items.graphite, 40
+            ));
+            // 基础属性
+            size = 2;
+            tier = 3;
+            drillTime = 1120f;      // 单个钻头挖掘时间
+            warmupSpeed = 0.015f;
+
+            // 定义4个钻孔的偏移坐标（相对于方块中心，单位：像素）
+            // size=2时，方块大小为64x64像素，中心点偏移4像素到四个象限
+            drillCount = 4;
+            drillOffsetX = new float[]{-4f, 4f, -4f, 4f};
+            drillOffsetY = new float[]{-4f, -4f, 4f, 4f};
+
+            // 可选：设置每个钻孔的转速乘数（默认都是1.0f）
+            drillSpeedMultipliers = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
+
+            // 可选：设置显示效果
+            drawMultipleDrills = true;
+            drawMineItem = true;
+
+            // 启用液体强化
+            liquidBoostIntensity = 1.6f;  // 2.56倍速度提升
+
+            // 添加液体消耗（水）
+            consume(new ConsumeLiquid(Liquids.water, 4f / 60f){{
+                optional = true;   // 可选，不是必需的
+                booster = true;    // 标记为强化剂
+            }}); // 6/秒，转换为每帧消耗
+        }};
+
+// 电线杆
+        powerPole = new PowerPole("power-pole"){{
+            requirements(Category.power, ItemStack.with(
+                    Items.copper, 30,
+                    Items.lead, 20
+            ));
+            buildVisibility = BuildVisibility.shown;
+            alwaysUnlocked = true;
+
+            laserRange = 48f;        // 连接范围12格
+            maxNodes = Integer.MAX_VALUE;           // 最大连接数
+            lineCount = 4;           // 4个线轴
+            lineSpacing = 12f;       // 间距12像素
+            lineRadius = 8f;         // 点击检测半径
+            areaRange = 25f;  // 区域连接范围25格（正方形）
+
+
+            laserColor1 = Color.valueOf("ffcc66");
+            laserColor2 = Color.valueOf("ffaa44");
         }};
     }
 }
