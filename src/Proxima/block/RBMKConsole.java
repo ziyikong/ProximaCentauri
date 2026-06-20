@@ -135,19 +135,16 @@ public class RBMKConsole extends RBMKBase{
                 columns.add((RBMKColumn)null);
             }
             
-            // 扫描周围的方块
-            float scanRange = 200f;
-            for(int dx = - (int)scanRange; dx <= (int)scanRange; dx++){
-                for(int dy = - (int)scanRange; dy <= (int)scanRange; dy++){
-                    Building build = world.build(tile.x + dx, tile.y + dy);
-                    if(build != null && build != this){
-                        // 检查是否是RBMK组件
-                        if(build.block instanceof RBMKBase){
-                            // 黑名单：排除RBMKConsole和RBMKPusher
-                            if(build.block instanceof RBMKConsole || build.block instanceof RBMKPusher){
-                                continue;
-                            }
-                            reactorComponents.add(build);
+            // 扫描周围的方块 - 使用 proximity 代替全图扫描以提高性能
+            for(Building build : proximity){
+                if(build != null && build != this){
+                    // 检查是否是RBMK组件
+                    if(build.block instanceof RBMKBase){
+                        // 黑名单：排除RBMKConsole和RBMKPusher
+                        if(build.block instanceof RBMKConsole || build.block instanceof RBMKPusher){
+                            continue;
+                        }
+                        reactorComponents.add(build);
                             
                             // 添加到结构俯视图
                             if(originX != -1 && originY != -1 && originZ != -1){

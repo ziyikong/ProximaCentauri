@@ -11,10 +11,10 @@ author: "128_OTEML"
 main: "Proxima.ProximaCentauriMod"
 
 #the mod description as seen in the mod dialog
-description: "A Mindustry Java mod."
+description: "A MOD originating from ice and snow. Adds a new ice-themed planet, RBMK nuclear reactor system, DFC antimatter core system, railway system, custom units, items and liquids."
 
 #the mod version
-version: 1.0
+version: "0.0.8"
 
 #the minimum game build required to run this mod
 minGameVersion: 157

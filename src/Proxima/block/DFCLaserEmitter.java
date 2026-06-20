@@ -15,6 +15,7 @@ import mindustry.entities.TargetPriority;
 import mindustry.gen.Building;
 import mindustry.gen.Unit;
 import mindustry.graphics.Drawf;
+import mindustry.gen.Units;
 import mindustry.graphics.Pal;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.defense.turrets.Turret;
@@ -63,6 +64,12 @@ public class DFCLaserEmitter extends DFCBase {
         // 启用配置功能
         configurable = true;
         saveConfig = false;
+        
+        // 激光发射器需要攻击属性
+        attacks = true;
+        priority = TargetPriority.turret;
+        group = BlockGroup.turrets;
+        flags = EnumSet.of(BlockFlag.turret);
         
         coolantMultiplier = 2f;
     }
@@ -113,6 +120,11 @@ public class DFCLaserEmitter extends DFCBase {
                 laserTime = laserDuration; // 保持激光持续发射
                 charging = false;
                 
+                // 触发射击特效
+                if (laserTime >= laserDuration - Time.delta) {
+                    shoot();
+                }
+                
                 // 持续造成伤害
                 if (target != null && dfcCoreTarget == null) {
                     target.damage(laserDamage / laserDuration * Time.delta);
@@ -127,25 +139,25 @@ public class DFCLaserEmitter extends DFCBase {
             target = null;
             float bestDistance = Float.MAX_VALUE;
             
-            // 优化的目标搜索：使用矩形区域搜索
-            int radius = (int)(laserRange / tilesize) + 1;
-            int tileX = tileX();
-            int tileY = tileY();
-            
-            for (int i = tileX - radius; i <= tileX + radius; i++) {
-                for (int j = tileY - radius; j <= tileY + radius; j++) {
-                    if (i >= 0 && i < world.width() && j >= 0 && j < world.height()) {
-                        Building building = world.build(i, j);
-                        if (building != null && building.team != team) {
-                            float distance = Mathf.dst(x, y, building.x, building.y);
-                            if (distance <= laserRange && distance < bestDistance) {
-                                bestDistance = distance;
-                                target = building;
-                            }
-                        }
+            // 使用 Units.nearbyEnemies 进行高效的目标搜索
+            Units.nearbyEnemies(team, x - laserRange, y - laserRange, laserRange * 2, laserRange * 2, unit -> {
+                if (unit.within(x, y, laserRange)) {
+                    float distance = unit.dst(x, y);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        // 激光发射器只攻击建筑目标，不攻击单位
                     }
                 }
-            }
+            });
+            
+            // 搜索敌方建筑目标
+            indexer.eachBlock(team, x, y, laserRange, b -> true, build -> {
+                float distance = build.dst(x, y);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    target = build;
+                }
+            });
         }
 
         private void shoot() {

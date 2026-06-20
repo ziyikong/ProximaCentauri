@@ -56,12 +56,13 @@ public class DFCore extends DFCBase {
         this.rotateSpeed = 5f;
         this.activationTime = 0f;
         
-        outputsPower = false;
-        consumesPower = false;
+        outputsPower = true;
+        consumesPower = true;
         hasItems = false;
         hasLiquids = true;
         liquidCapacity = liquidCapacity1 + liquidCapacity2;
-        // 移除consPower的设置，因为我们使用自定义的电力容量系统
+        // 使用自定义电力容量系统，同时接入Mindustry电网
+        consumePower(100f);
         
         canOverdrive = false;
         envEnabled |= Env.space | Env.underwater | Env.any;
@@ -184,26 +185,37 @@ public class DFCore extends DFCBase {
         }
         
         /**
-         * 执行范围无限大的kill命令
-         */
-        private void executeKillCommand() {
-            // 播放爆炸效果
-            ProximaFX.aoeExplosion2.at(x, y, 500f);
-            ProximaFX.fragmentExplosion.at(x, y, 300f);
-            ProximaFX.destroySparks.at(x, y, 0f, 200f); // 传递200f作为data参数
-            ProximaFX.endDeath.at(x, y, 400f);
-            ProximaFX.desGroundHitMain.at(x, y, 0f);
-            
-            // 杀死所有单位
-            Groups.unit.each(unit -> {
+     * 执行DFC核心熔毁爆炸 - 仅影响有限范围内的敌方单位和建筑
+     */
+    private void executeKillCommand() {
+        float explosionRange = range * 4f; // 爆炸范围限制为核心射程的4倍
+        
+        // 播放爆炸效果
+        ProximaFX.aoeExplosion2.at(x, y, explosionRange);
+        ProximaFX.fragmentExplosion.at(x, y, explosionRange * 0.6f);
+        ProximaFX.destroySparks.at(x, y, 0f, 200f);
+        ProximaFX.endDeath.at(x, y, explosionRange * 0.8f);
+        ProximaFX.desGroundHitMain.at(x, y, 0f);
+        
+        // 杀死范围内的敌方单位（不包括己方）
+        Groups.unit.intersect(x - explosionRange, y - explosionRange, explosionRange * 2, explosionRange * 2, unit -> {
+            if (unit.team != team && unit.within(x, y, explosionRange)) {
                 unit.kill();
-            });
-            
-            // 摧毁所有建筑
-            Groups.build.each(build -> {
+            }
+            return true;
+        });
+        
+        // 摧毁范围内的敌方建筑（不包括己方）
+        Groups.build.intersect(x - explosionRange, y - explosionRange, explosionRange * 2, explosionRange * 2, build -> {
+            if (build.team != team && build.within(x, y, explosionRange)) {
                 build.kill();
-            });
-        }
+            }
+            return true;
+        });
+        
+        // 核心自身也摧毁
+        kill();
+    }
         
         /**
          * 热管理逻辑
@@ -278,8 +290,23 @@ public class DFCore extends DFCBase {
             // 增加核心热量
             absorbHeat(1000f); // 增加1000单位的热量
             
+            // 将自定义电力输出到Mindustry电网
+            outputPowerToGrid();
+            
             // 通知能量发射器发生了能量增值
             notifyEnergyEmitters();
+        }
+        
+        /**
+         * 将自定义电力输出到Mindustry电网
+         */
+        private void outputPowerToGrid() {
+            if (power != null && consPower != null) {
+                // 将powerAmount2转换为Mindustry电网电力
+                float powerOutput = powerAmount2 * 0.1f; // 转换比例
+                power.status = Mathf.clamp(power.status + powerOutput / consPower.capacity);
+                powerAmount2 *= 0.9f; // 消耗部分自定义电力
+            }
         }
         
         /**

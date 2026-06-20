@@ -46,6 +46,9 @@ public class ProximaCentauriMod extends Mod{
 
     @Override
     public void loadContent(){
+        ProximaPal.load();
+        ProximaSounds.load();
+        ProximaFX.load();
         SpecialDeathEffects.load();
         SpecialContent.load();
         ProximaItems.load();
@@ -54,5 +57,6 @@ public class ProximaCentauriMod extends Mod{
         ProximaBlocks.load();
         ProximaPlanets.load();
         ProximaTechTree.load();
+        RBMKFuelData.initDefaultFuels();
     }
 }

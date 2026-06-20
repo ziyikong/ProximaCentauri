@@ -80,10 +80,11 @@ public abstract class DFCBase extends GenericCrafter {
         separateItemCapacity = true;
         allowResupply = true;
         outlineIcon = true;
-        attacks = true;
-        priority = TargetPriority.turret;
-        group = BlockGroup.turrets;
-        flags = EnumSet.of(BlockFlag.turret);
+        // 子类可以根据需要覆盖这些值
+        attacks = false;
+        priority = TargetPriority.core;
+        group = BlockGroup.power;
+        flags = EnumSet.of(BlockFlag.generator);
     }
 
     @Override

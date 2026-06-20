@@ -22,6 +22,7 @@ import static mindustry.Vars.*;
 
 public class EndAntiAirTurret extends Turret{
     protected float targetingRange = 700f;
+    protected int maxTargets = 32; // 限制最大目标数量，避免性能问题
 
     static Effect hitAirEffect = new Effect(10f, 800f * 3f, e -> {
         Draw.color(ProximaPal.red);
@@ -65,10 +66,10 @@ public class EndAntiAirTurret extends Turret{
             targets.removeAll(t -> t == null || !t.isAdded() || (t instanceof Healthc h && !h.isValid()) || !Mathf.within(x, y, t.x(), t.y(), range + (t instanceof Sized s ? s.hitSize() / 2f : 0f)));
             targetWarmups.truncate(targets.size);
             
-            // 寻找新目标
-            if(targets.size < 1600){
+            // 寻找新目标，限制最大数量避免性能问题
+            if(targets.size < maxTargets){
                 Utils.scanEnemies(team, x, y, range, true, false, u -> {
-                    if(u instanceof Unit && !targets.contains(u)){
+                    if(u instanceof Unit && !targets.contains(u) && targets.size < maxTargets){
                         targets.add(u);
                         targetWarmups.add(0f);
                     }

@@ -27,12 +27,74 @@ public class ProximaTechTree {
         // 为比邻星星球设置科技树
         // 以比邻星核心作为科技树的根节点
         ProximaPlanets.proxima.techTree = nodeRoot("proxima", ProximaBlocks.proximaCore, () -> {
+            // 基础资源采集
+            node(ProximaBlocks.rockCoreDrill, () -> {
+                node(ProximaBlocks.graphiteFactory);
+            });
+            
+            // 电力系统
+            node(ProximaBlocks.powerPole, () -> {
+                node(ProximaBlocks.largeSteamTurbine, () -> {
+                    // RBMK核反应堆系统
+                    node(ProximaBlocks.rbmkBase, () -> {
+                        node(ProximaBlocks.rbmkRod, () -> {
+                            node(ProximaBlocks.rbmkRodModerated);
+                        });
+                        node(ProximaBlocks.rbmkControl, () -> {
+                            node(ProximaBlocks.rbmkControlModerated);
+                        });
+                        node(ProximaBlocks.rbmkCooler);
+                        node(ProximaBlocks.rbmkReflector);
+                        node(ProximaBlocks.rbmkModerator);
+                        node(ProximaBlocks.rbmkAbsorber);
+                        node(ProximaBlocks.rbmkBlank);
+                        node(ProximaBlocks.rbmkBoiler);
+                        node(ProximaBlocks.rbmkHeater);
+                        node(ProximaBlocks.rbmkConsole);
+                        node(ProximaBlocks.rbmkPusher);
+                        node(ProximaBlocks.largeHeatPipe);
+                    });
+                    
+                    // DFC反物质系统
+                    node(ProximaBlocks.dfcCore, () -> {
+                        node(ProximaBlocks.dfcLaserEmitter);
+                        node(ProximaBlocks.dfcStabilizer);
+                        node(ProximaBlocks.dfcInjector);
+                        node(ProximaBlocks.dfcEnergyEmitter);
+                        node(ProximaBlocks.dfcEnergyReceiver);
+                        node(ProximaBlocks.dfcExchanger);
+                    });
+                });
+            });
+            
+            // 物流系统
+            node(ProximaBlocks.fastSideOutputConveyor, () -> {
+                node(ProximaBlocks.proximaJunction);
+                node(ProximaBlocks.adaptItemBridge);
+                node(ProximaBlocks.adaptLiquidBridge);
+                node(ProximaBlocks.pipe);
+            });
+            
+            // 激光系统
+            node(ProximaBlocks.laserEmitter, () -> {
+                node(ProximaBlocks.laserReceiver);
+                node(ProximaBlocks.laserMirror);
+            });
+            
+            // 防御系统
+            node(ProximaBlocks.drizzle, () -> {
+                node(ProximaBlocks.endAntiAirTurret);
+            });
+            
             // 铁路系统
             node(ProximaBlocks.trainTrack, () -> {
                 node(ProximaBlocks.trainStation, () -> {
                     node(ProximaBlocks.trainFactory);
                 });
             });
+            
+            // 机械臂
+            node(ProximaBlocks.mechanicalArm);
         });
     }
 
